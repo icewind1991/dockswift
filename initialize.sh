@@ -1,5 +1,23 @@
 #!/bin/bash
 
+function wait_mariadb_start() {
+  sleep 2
+  while [ `mysqlcheck mysql -u "root" "-popenstack" |wc -l` -lt 2 ]
+  do
+    sleep 2
+  done
+  sleep 2
+}
+
+function wait_mariadb_stop() {
+  sleep 2
+  while [ `mysqlcheck mysql |wc -l` -gt 2 ]
+  do
+    sleep 2
+  done
+  sleep 2
+}
+
 sudo echo "127.0.0.1 mariadb" >> /etc/hosts
 
 if [ ! -d "/var/lib/mysql/mysql" ]; then
@@ -23,10 +41,7 @@ if [ ! -z "$INITIALIZE" ]; then
   echo
   echo "Starting MariaDB (skip-grant-tables)..."
   /usr/bin/mysqld_safe --skip-grant-tables &
-  while [ `mysqlcheck mysql |wc -l` -lt 2 ]
-  do
-    sleep 2
-  done
+  wait_mariadb_start
   /usr/bin/mysql -u root -e "use mysql; update user set password=PASSWORD('openstack') where User='root';"
   echo "Updated root password"
   sleep 2
@@ -34,17 +49,10 @@ if [ ! -z "$INITIALIZE" ]; then
   /usr/bin/mysql -u root -e "flush privileges;"
   sleep 2
   killall mysqld
-  while [ `mysqlcheck mysql |wc -l` -gt 2 ]
-  do
-    sleep 2
-  done
-  sleep 2
+  wait_mariadb_stop
   echo "Starting up MariaDB to add OpenStack databases..."
   /usr/bin/mysqld_safe &
-  while [ `mysqlcheck mysql -u "root" "-popenstack" |wc -l` -lt 2 ]
-  do
-    sleep 2
-  done
+  wait_mariadb_start
   echo "Adding OpenStack databases and users..."
   /usr/bin/mysql -u "root" "-popenstack" < /usr/local/etc/initialize_db.sql
   sleep 2
@@ -54,10 +62,7 @@ if [ ! -z "$INITIALIZE" ]; then
   echo "Stopping the database..."
   sleep 2
   killall mysqld
-  while [ `mysqlcheck mysql -u "root" "-popenstack" |wc -l` -gt 2 ]
-  do
-    sleep 2
-  done
+  wait_mariadb_stop
   echo "INITILIAZATION IS COMPLETE"
 
 fi
