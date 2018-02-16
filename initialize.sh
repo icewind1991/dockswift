@@ -36,36 +36,33 @@ if [ ! -f "/usr/local/etc/initialize_db.sql" ]; then
 
 fi
 
-if [ ! -z "$INITIALIZE" ]; then
-  echo "INITIALIZE flag has been set.  Setting up the database for OpenStack"
-  echo
-  echo "Starting MariaDB (skip-grant-tables)..."
-  /usr/bin/mysqld_safe --skip-grant-tables &
-  wait_mariadb_start
-  /usr/bin/mysql -u root -e "use mysql; update user set password=PASSWORD('openstack') where User='root';"
-  echo "Updated root password"
-  sleep 2
-  echo "Flushing and stopping the database..."
-  /usr/bin/mysql -u root -e "flush privileges;"
-  sleep 2
-  killall mysqld
-  wait_mariadb_stop
-  echo "Starting up MariaDB to add OpenStack databases..."
-  /usr/bin/mysqld_safe &
-  wait_mariadb_start
-  echo "Adding OpenStack databases and users..."
-  /usr/bin/mysql -u "root" "-popenstack" < /usr/local/etc/initialize_db.sql
-  sleep 2
-  echo "Adding phpMyAdmin schema..."
-  /usr/bin/mysql -u "root" "-popenstack" < /usr/local/etc/create_tables.sql
-  sleep 2
-  echo "Stopping the database..."
-  sleep 2
-  killall mysqld
-  wait_mariadb_stop
-  echo "INITILIAZATION IS COMPLETE"
-
-fi
+echo "INITIALIZE flag has been set.  Setting up the database for OpenStack"
+echo
+echo "Starting MariaDB (skip-grant-tables)..."
+/usr/bin/mysqld_safe --skip-grant-tables &
+wait_mariadb_start
+/usr/bin/mysql -u root -e "use mysql; update user set password=PASSWORD('openstack') where User='root';"
+echo "Updated root password"
+sleep 2
+echo "Flushing and stopping the database..."
+/usr/bin/mysql -u root -e "flush privileges;"
+sleep 2
+killall mysqld
+wait_mariadb_stop
+echo "Starting up MariaDB to add OpenStack databases..."
+/usr/bin/mysqld_safe &
+wait_mariadb_start
+echo "Adding OpenStack databases and users..."
+/usr/bin/mysql -u "root" "-popenstack" < /usr/local/etc/initialize_db.sql
+sleep 2
+echo "Adding phpMyAdmin schema..."
+/usr/bin/mysql -u "root" "-popenstack" < /usr/local/etc/create_tables.sql
+sleep 2
+echo "Stopping the database..."
+sleep 2
+killall mysqld
+wait_mariadb_stop
+echo "INITILIAZATION IS COMPLETE"
 
 sleep 5
 

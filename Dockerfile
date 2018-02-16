@@ -53,24 +53,21 @@ RUN apt-get -y install \
 
 RUN apt-get remove -y --auto-remove openstack-dashboard-ubuntu-theme
 
-VOLUME ["/etc/mysql", "/var/lib/mysql"]
-
 ADD mariadb/apache2.conf /etc/apache2/apache2.conf
 ADD mariadb/config.inc.php /etc/phpmyadmin/config.inc.php
 ADD mariadb/initialize_db.sql /root/initialize_db.sql
 ADD mariadb/start_apache2.sh /etc/service/apache2/run
 ADD mariadb/start_mariadb.sh /etc/service/mariadb/run
-ADD initialize.sh /etc/my_init.d/01_initialize.sh
+ADD initialize.sh /initialize.sh
+ADD start.sh /etc/my_init.d/01_start.sh
 ADD mariadb/mariadb_config.tar.gz /root/mariadb
 
-VOLUME ["/etc/keystone"]
 
 ADD keystone/keystone.conf /etc/keystone/keystone.conf
 ADD keystone/keystone.tar.gz /root/keystone
 #ADD keystone/start_memcached.sh /etc/service/memcached/run
 ADD keystone/start_keystone.sh /etc/service/keystone/run
 
-VOLUME ["/srv"]
 
 RUN mkdir -p /var/log/supervisor
 ADD swift/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
@@ -83,7 +80,7 @@ ADD swift/account-server.conf /etc/swift/account-server.conf
 ADD swift/object-server.conf /etc/swift/object-server.conf
 ADD swift/container-server.conf /etc/swift/container-server.conf
 ADD swift/proxy-server.conf /etc/swift/proxy-server.conf
-RUN chmod 755 /etc/my_init.d/01_initialize.sh
+RUN chmod 755 /etc/my_init.d/01_start.sh
 
 ADD horizon/dashboard.py /usr/share/openstack-dashboard/openstack_dashboard/dashboards/project/dashboard.py
 ADD horizon/dashboard_admin.py /usr/share/openstack-dashboard/openstack_dashboard/dashboards/admin/dashboard.py
@@ -96,7 +93,6 @@ ADD horizon/dashboard_admin.py /usr/share/openstack-dashboard/openstack_dashboar
 ADD horizon/local_settings.py /etc/openstack-dashboard/local_settings.py
 ADD horizon/overrides.py /usr/lib/python2.7/overrides.py
 
-VOLUME ["/etc/openstack-dashboard"]
 
 ADD horizon/openstack-dashboard.conf /etc/apache2/conf-available/openstack-dashboard.conf
 #ADD horizon/start_memcached.sh /etc/service/memcached/run
@@ -127,5 +123,11 @@ EXPOSE 11211
 EXPOSE 8080
 EXPOSE 8000
 
+RUN /initialize.sh
+
+VOLUME ["/etc/mysql", "/var/lib/mysql"]
+VOLUME ["/etc/keystone"]
+VOLUME ["/srv"]
+VOLUME ["/etc/openstack-dashboard"]
 
 CMD ["/sbin/my_init"]
