@@ -203,11 +203,7 @@ fi
 echo "Starting supervisord..."
 /usr/bin/supervisord -c /etc/supervisor/supervisord.conf
 
-if [ ! -z "$IPADDRESS" ]; then
-    SWIFT_ENDPOINT=$IPADDRESS
-else
-    SWIFT_ENDPOINT="localhost"
-fi
+SWIFT_ENDPOINT="dockswift"
 
 if [ $(keystone --os-endpoint=http://keystone:35357/v2.0 --os-token=74d52ad7f4d039e55d84 user-list |grep swift |wc -\
 l) -ne 1 ]; then
