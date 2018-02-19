@@ -125,9 +125,4 @@ EXPOSE 8000
 
 RUN /initialize.sh
 
-VOLUME ["/etc/mysql", "/var/lib/mysql"]
-VOLUME ["/etc/keystone"]
-VOLUME ["/srv"]
-VOLUME ["/etc/openstack-dashboard"]
-
 CMD ["/sbin/my_init"]
